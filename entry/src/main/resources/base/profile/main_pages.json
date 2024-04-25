@@ -1,0 +1,21 @@
+{
+  "src": [
+    "Index",
+    "details/WebViewPage",
+    "search/pages/SearchPage",
+    "hello/StateManagePage",
+    "hello/state/StateBasicPage",
+    "hello/state/StateClassPage",
+    "hello/state/StateArrayPage",
+    "hello/state/PropPage",
+    "hello/state/LinkBasicPage",
+    "hello/state/LinkClassPage",
+    "hello/state/LinkArrayPage",
+    "hello/state/ProvideConsumeBasicPage",
+    "hello/state/ProvideConsumeClassPage",
+    "hello/state/ProvideConsumeArrayPage",
+    "hello/state/ObjectLinkClassPage",
+    "hello/state/ObjectLinkArrayPage",
+    "hello/state/ViewModelPage"
+  ]
+}

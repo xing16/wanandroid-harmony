@@ -1,0 +1,62 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "storePassword": "0000001A7C82081233002345A95168E72DAD0B0608D08408201982EBDC80F9327B4B167AFEF5CC8CC7B5",
+          "certpath": "/Users/xing/HarmonyOS/sign/hello.cer",
+          "keyAlias": "debug",
+          "keyPassword": "0000001A84C222A8F306FD2971836C6C94998189115D4F70101DB754409F03258BFFDF873028FA3B6290",
+          "profile": "/Users/xing/HarmonyOS/sign/HelloDebug.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "/Users/xing/HarmonyOS/sign/keystore.p12"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compileSdkVersion": "4.0.0(10)",
+        "compatibleSdkVersion": "4.0.0(10)",
+        "runtimeOS": "HarmonyOS",
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug",
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Lib_Http",
+      "srcPath": "./Lib_Http",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}
