@@ -5,11 +5,11 @@ export class HomeModel {
   pageCount: number = 0
   size: number = 0
   total: number = 0
-  datas: ArticleItem[] = []
+  datas: Article[] = []
 }
 
 @Observed
-export class ArticleItem {
+export class Article {
   adminAdd?: boolean
   apkLink?: string
   audit?: number

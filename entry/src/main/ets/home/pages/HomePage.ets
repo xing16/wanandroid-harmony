@@ -1,52 +1,120 @@
-import { ObservableArray } from '../../common/ObservableArray'
-import { StateView } from '../../components/StateView'
-import { LoadState, UiState } from '../../model/UiState'
-import { BannerModel } from '../data/model/BannerModel'
-import { ArticleItem } from '../data/model/HomeModel'
+import { Constants } from '../../utils/Constant'
+import { TabModel } from '../data/model/TabModel'
 import { HomeViewModel } from '../viewmodel/HomeViewModel'
+import { RecommendPage } from './RecommendPage'
 
 @Component
 export struct HomePage {
-  @State homeViewModel: HomeViewModel = new HomeViewModel()
+  @State viewModel: HomeViewModel = new HomeViewModel()
+  @State sumScrollOffset: number = 0
+  @State currentIndex: number = 0
+  private tabController: TabsController = new TabsController()
 
   aboutToAppear() {
-    this.homeViewModel.getHomeArticles()
-    this.homeViewModel.getBanner()
+    this.viewModel.getHomeTab()
   }
 
   build() {
-    Column() {
-      SearchBar({
-        onSearchClick: () => {
-          this.homeViewModel.openPage({
-            url: 'search/pages/SearchPage'
+    Stack({ alignContent: Alignment.TopStart }) {
+      Tabs({ barPosition: BarPosition.Start, controller: this.tabController }) {
+        ForEach(this.viewModel.tabList, (item: TabModel, index: number) => {
+          if (item.id === TabModel.recommend_id) {
+            TabContent() {
+              RecommendPage({ sumScrollOffset: this.sumScrollOffset })
+            }
+            .tabBar(item.name)
+          } else {
+            TabContent() {
+              Column() {
+                Text(item.name).fontSize(30).fontWeight(600)
+              }
+              .justifyContent(FlexAlign.Center)
+            }
+          }
+        })
+      }
+      .vertical(false)
+      .scrollable(true)
+      .barHeight(0)
+      .tabIndex(this.currentIndex)
+      .barMode(BarMode.Scrollable)
+      .animationDuration(400)
+      .onChange((index: number) => {
+        this.currentIndex = index
+      })
+      .height('100%')
+      .width('100%')
+
+      Column() {
+        SearchBar({
+          searchTextColor: this.sumScrollOffset > Constants.bannerHeight ? Color.Gray : Color.White,
+          onSearchClick: () => {
+            this.viewModel.openPage({
+              url: 'search/pages/SearchPage'
+            })
+          }
+        })
+        List() {
+          ForEach(this.viewModel.tabList, (item: TabModel, index: number) => {
+            ListItem() {
+              Column({ space: 0 }) {
+                Text(item.name)
+                  .layoutWeight(1)
+                  .fontColor(index === this.currentIndex ? Color.Black : Color.Gray)
+                  .fontWeight(index === this.currentIndex ? 600 : 400)
+                  .fontSize(index === this.currentIndex ? 20 : 16)
+                  .padding({
+                    left: index === 0 ? 16 : 10,
+                    right: index === this.viewModel.tabList.length - 1 ? 16 : 10
+                  })
+                Divider()
+                  .offset({ y: -5 })
+                  .width(20)
+                  .height(3)
+                  .backgroundColor(Color.Red)
+                  .strokeWidth(3)
+                  .color(Color.Black)
+                  .opacity(this.currentIndex === index ? 1 : 0)
+              }.onClick(() => {
+                if (this.currentIndex === index) {
+                  return
+                }
+                this.currentIndex = index
+                this.tabController.changeIndex(this.currentIndex)
+              })
+            }
           })
         }
-      })
-      Content({
-        homeListState: this.homeViewModel.homeListState,
-        bannerList: this.homeViewModel.bannerList,
-        onItemClick: (item: ArticleItem): void => {
-          this.homeViewModel.openPage({
-            url: 'details/WebViewPage',
-            params: { url: item.link }
-          })
-        },
-        onBannerClick: (item: BannerModel) => {
-          this.homeViewModel.openPage({
-            url: 'details/WebViewPage',
-            params: { url: item.url }
-          })
-        }
-      })
+        .width('100%')
+        .height(Constants.tabBarHeight)
+        .scrollBar(BarState.Off)
+        .listDirection(Axis.Horizontal)
+      }
+      .backgroundColor(this.sumScrollOffset > Constants.bannerHeight ? Color.White : Color.Transparent)
     }
-    .width('100%')
-    .height('100%')
+  }
+
+  @Builder
+  tabBuilder(index: number, name: string) {
+    Column() {
+      Text(name)
+        .fontColor(this.currentIndex === index ? Color.Black : Color.Gray)
+        .fontSize(this.currentIndex === index ? 17 : 16)
+        .fontWeight(this.currentIndex === index ? 500 : 400)
+        .maxLines(1)
+      Divider()
+        .strokeWidth(2)
+        .color(Color.Black)
+        .opacity(this.currentIndex === index ? 1 : 0)
+    }
+    .width(50)
   }
 }
 
 @Component
 struct SearchBar {
+  statusBarHeight: number = AppStorage.get<number>('statusBarHeight') ?? 0
+  @Prop searchTextColor: Color
   onSearchClick: () => void = () => {
   }
 
@@ -56,144 +124,23 @@ struct SearchBar {
         Image($r('app.media.search'))
           .width(20)
           .height(20)
-          .fillColor(Color.Gray)
-
-        Text('请输入关键字').fontColor(Color.Gray).fontSize(13)
+          .fillColor(this.searchTextColor)
+        Text('请输入关键字')
+          .fontColor(this.searchTextColor)
+          .fontSize(13)
       }
       .height(32)
       .layoutWeight(1)
       .margin({ left: 20, right: 20 })
       .padding({ left: 13, right: 13 })
-      .backgroundColor('#eee')
+      .backgroundColor('#55eeeeee')
       .borderRadius(15)
       .onClick(() => {
         this.onSearchClick()
       })
     }
-    .width('100%')
-    .height(50)
-  }
-}
-
-@Component
-struct Content {
-  @ObjectLink homeListState: UiState<ObservableArray<ArticleItem>>
-  @ObjectLink bannerList: ObservableArray<BannerModel>
-  onItemClick: (item: ArticleItem) => void = () => {
-  }
-  onBannerClick: (item: ArticleItem) => void = () => {
-  }
-
-  build() {
-    // StateView({
-    //   state: LoadState.SUCCESS,
-    //   content: this.HomeContent
-    // })
-    HomeListView({
-      homeList: this.homeListState.data,
-      bannerList: this.bannerList,
-      onItemClick: this.onItemClick,
-      onBannerClick: this.onBannerClick
-    })
-  }
-}
-
-@Component
-struct HomeListView {
-  @ObjectLink bannerList: ObservableArray<BannerModel>
-  @ObjectLink homeList: ObservableArray<ArticleItem>
-  onBannerClick: (item: BannerModel) => void = () => {
-  }
-  onItemClick: (item: ArticleItem) => void = () => {
-  }
-
-  build() {
-    List() {
-      ListItem() {
-        Banner({
-          bannerList: this.bannerList,
-          onBannerClick: this.onBannerClick
-        })
-      }
-
-      ForEach(this.homeList, (item: ArticleItem) => {
-        ListItem() {
-          HomeItem({ item: item, onItemClick: this.onItemClick })
-        }
-      }, (item: ArticleItem) => {
-        return JSON.stringify(item)
-      })
-    }
-    .width('100%')
-    .height('100%')
-    .divider({ strokeWidth: 10, color: '#f9f9f9' })
-  }
-}
-
-@Component
-struct Banner {
-  private swiperController: SwiperController = new SwiperController()
-  @ObjectLink bannerList: ObservableArray<BannerModel>
-  onBannerClick: (item: BannerModel) => void = () => {
-  }
-
-  build() {
-    Swiper(this.swiperController) {
-      ForEach(this.bannerList, (item: BannerModel) => {
-        Image(item.imagePath)
-          .width('100%')
-          .height(160)
-          .onClick(() => {
-            this.onBannerClick(item)
-          })
-      })
-    }
-    .cachedCount(2)
-    .index(0)
-    .autoPlay(true)
-    .interval(2000)
-    .itemSpace(10)
-    .indicator(Indicator.dot()
-      .right(0)
-      .bottom(0)
-      .itemWidth(6)
-      .itemHeight(6)
-      .selectedItemWidth(6)
-      .selectedItemHeight(6)
-      .color(Color.Gray)
-      .selectedColor(Color.Black))
-    .loop(true)
-    .duration(1000)
-    .itemSpace(0)
-    .displayArrow(false)
-  }
-}
-
-@Component
-struct HomeItem {
-  @ObjectLink item: ArticleItem
-  onItemClick: (item: ArticleItem) => void = () => {
-  }
-
-  build() {
-    Column() {
-      Text(this.item.title).fontSize(18).fontColor(Color.Black).fontWeight(500)
-      Blank().height(12)
-      Row({ space: 10 }) {
-        Text(this.item.niceShareDate).fontSize(12).fontColor('#666666')
-        Text(this.item.shareUser ?? this.item.author)
-          .fontSize(12)
-          .fontColor('#666666')
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-      }
-    }
-    .width('100%')
-    .padding({ left: 15, top: 20, right: 15, bottom: 20 })
-    .backgroundColor(Color.White)
-    .alignItems(HorizontalAlign.Start)
-    .onClick(() => {
-      this.onItemClick(this.item)
-    })
+    .backgroundColor(Color.Transparent)
+    .height(Constants.searchBarHeight + px2vp(this.statusBarHeight))
+    .padding({ top: px2vp(this.statusBarHeight) })
   }
 }

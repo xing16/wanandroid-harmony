@@ -15,14 +15,24 @@ export default class EntryAbility extends UIAbility {
 
   onWindowStageCreate(windowStage: window.WindowStage): void {
     // Main window is created, set main page for this ability
-    hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
-
     windowStage.loadContent('Index', (err, data) => {
       if (err.code) {
-        hilog.error(0x0000, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
       }
-      hilog.info(0x0000, 'testTag', 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
+      // 获取应用主窗口
+      let mainWindow: window.Window = windowStage.getMainWindowSync()
+      // 设置窗口全屏
+      mainWindow.setWindowLayoutFullScreen(true)
+      // 获取布局避让遮挡的区域
+      let avoidArea: window.AvoidArea = mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM)
+      let gestureAvoidArea = mainWindow.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM_GESTURE)
+      // 状态栏高度
+      let statusBarHeight = avoidArea.topRect.height
+      let navigationBarHeight = gestureAvoidArea.bottomRect.height
+
+      AppStorage.setOrCreate('statusBarHeight', statusBarHeight)
+      AppStorage.setOrCreate('navigationBarHeight', navigationBarHeight)
+
     });
   }
 

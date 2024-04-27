@@ -3,8 +3,19 @@ import http from '@ohos.net.http';
 import hilog from '@ohos.hilog';
 import { httpClient } from 'library'
 import { BannerModel } from '../model/BannerModel';
+import { TabModel } from '../model/TabModel';
 
 export class HomeDataSource {
+  /**
+   * home tabs
+   * @returns
+   */
+  async getHomeTab(): Promise<Array<TabModel>> {
+    return httpClient.request('project/tree/json', {
+      method: http.RequestMethod.GET
+    })
+  }
+
   /**
    * banner
    * @returns

@@ -1,8 +1,12 @@
-import { HomePage } from './home/pages/HomePage'
+import hilog from '@ohos.hilog';
+import { HomePage } from './home/pages/HomePage';
 
-@Entry
+let storage = LocalStorage.getShared();
+
+@Entry(storage)
 @Component
 struct Index {
+  navigationBarHeight: number = AppStorage.get<number>('navigationBarHeight') ?? 0
   tabDatas: TabItem[] = [
     new TabItem('首页', $r('app.media.home_fill'), $r('app.media.home'), () => {
     }),
@@ -28,7 +32,7 @@ struct Index {
       ForEach(this.tabDatas, (item: TabItem, index: number) => {
         TabContent() {
           if (index === 0) {
-              HomePage()
+            HomePage()
           } else {
             Column() {
               Text('我的内容')
@@ -40,7 +44,8 @@ struct Index {
         }
         .tabBar(this.tabBuilder(item.title, index, item.selectedIcon, item.normalIcon))
       })
-    }.scrollable(false)
+    }
+    .scrollable(false)
   }
 
   @Builder
@@ -53,10 +58,11 @@ struct Index {
         .fontColor(this.currentIndex === targetIndex ? '#000000' : '#666666')
     }
     .width('100%')
-    .height(50)
+    .height(this.navigationBarHeight + vp2px(50) + 'px')
     .justifyContent(FlexAlign.Center)
     .onClick(() => {
       if (this.currentIndex === targetIndex) {
+        hilog.debug(12, 'debugde', 'navigationBarHeight = ' + this.navigationBarHeight)
         return
       }
       this.currentIndex = targetIndex
